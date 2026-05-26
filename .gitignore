@@ -1,0 +1,22 @@
+# Rust
+target/
+Cargo.lock
+
+
+# Kern
+index/
+
+# Neovim
+*.swp
+*.swo
+*.swm
+.netrwhist
+Session.vim
+
+# VSCode
+.vscode/
+
+
+# Linux
+.directory
+*~
