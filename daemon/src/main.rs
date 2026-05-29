@@ -1,6 +1,7 @@
 use anyhow::Result;
-use tracing::info;
 use kern_engine::{KernIndex, SearchEngine};
+use std::sync::Arc;
+use tracing::info;
 
 mod config;
 mod hotkey;
@@ -15,19 +16,20 @@ async fn main() -> Result<()> {
     let config = config::load()?;
     info!("config loaded");
 
-    // initialise and populate the index
     let kern_index = KernIndex::new(&config.index_path)?;
     kern_index.index_docs(&config.docs_path)?;
     info!("docs indexed");
 
-    // build search engine
-    let _engine = SearchEngine::new(kern_index);
+    let engine = Arc::new(SearchEngine::new(kern_index));
     info!("search engine ready");
 
-    // start IPC server
-    tokio::spawn(ipc::start());
+    let engine_ipc = Arc::clone(&engine);
+    tokio::spawn(async move {
+        if let Err(e) = ipc::start(engine_ipc).await {
+            tracing::error!("IPC error: {}", e);
+        }
+    });
 
-    // start hotkey listener
     hotkey::listen(config).await?;
 
     Ok(())
