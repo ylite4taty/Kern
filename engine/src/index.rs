@@ -1,9 +1,12 @@
 use anyhow::Result;
 use tantivy::{
     schema::{Schema, TEXT, STORED},
-    Index, IndexWriter,
+    Index, IndexWriter, TantivyDocument,
 };
 use tracing::info;
+use walkdir::WalkDir;
+
+use crate::parser::parse_markdown;
 
 pub struct KernIndex {
     pub index: Index,
@@ -28,5 +31,45 @@ impl KernIndex {
 
     pub fn writer(&self) -> Result<IndexWriter> {
         Ok(self.index.writer(50_000_000)?)
+    }
+
+    pub fn index_docs(&self, docs_path: &str) -> Result<()> {
+        let mut writer = self.writer()?;
+
+        let title_field = self.schema.get_field("title")?;
+        let body_field = self.schema.get_field("body")?;
+        let path_field = self.schema.get_field("path")?;
+
+        for entry in WalkDir::new(docs_path)
+            .follow_links(true)
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| {
+                e.path()
+                    .extension()
+                    .map(|ext| ext == "md")
+                    .unwrap_or(false)
+            })
+        {
+            let path = entry.path().to_str().unwrap_or("").to_string();
+            match parse_markdown(&path) {
+                Ok(doc) => {
+                    let mut tantivy_doc = TantivyDocument::default();
+                    tantivy_doc.add_text(title_field, &doc.title);
+                    tantivy_doc.add_text(body_field, &doc.body);
+                    tantivy_doc.add_text(path_field, &doc.path);
+                    writer.add_document(tantivy_doc)?;
+                    info!("indexed: {}", path);
+                }
+                Err(e) => {
+                    tracing::warn!("failed to parse {}: {}", path, e);
+                }
+            }
+        }
+
+        writer.commit()?;
+        info!("index committed");
+
+        Ok(())
     }
 }
