@@ -22,9 +22,14 @@ impl KernIndex {
         let schema = schema_builder.build();
 
         std::fs::create_dir_all(index_path)?;
-        let index = Index::create_in_dir(index_path, schema.clone())?;
 
-        info!("index created at {}", index_path);
+        let index = if Index::exists(&tantivy::directory::MmapDirectory::open(index_path)?)? {
+            info!("opening existing index at {}", index_path);
+            Index::open_in_dir(index_path)?
+        } else {
+            info!("creating new index at {}", index_path);
+            Index::create_in_dir(index_path, schema.clone())?
+        };
 
         Ok(Self { index, schema })
     }
@@ -39,6 +44,8 @@ impl KernIndex {
         let title_field = self.schema.get_field("title")?;
         let body_field = self.schema.get_field("body")?;
         let path_field = self.schema.get_field("path")?;
+
+        writer.delete_all_documents()?;
 
         for entry in WalkDir::new(docs_path)
             .follow_links(true)
