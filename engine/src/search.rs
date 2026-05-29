@@ -1,6 +1,7 @@
 use anyhow::Result;
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
+use tantivy::schema::Value;
 use tantivy::TantivyDocument;
 use tracing::info;
 

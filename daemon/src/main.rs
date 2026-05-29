@@ -7,19 +7,16 @@ mod ipc;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-   tracing_subscriber::fmt::init();
-   
-   info!("kern daemon starting...");
+    tracing_subscriber::fmt::init();
 
-   // load config
-   let config = config::load()?;
-   info!("config loaded");
+    info!("kern daemon starting...");
 
-   // start IPC server
-   toki::spawn(ipc::start());
+    let config = config::load()?;
+    info!("config loaded");
 
-   // start hotkey listener
-   hotkey::listen(config).await?;
+    tokio::spawn(ipc::start());
 
-   ok(())
+    hotkey::listen(config).await?;
+
+    Ok(())
 }

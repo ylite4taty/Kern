@@ -1,13 +1,10 @@
 [package]
-name = "kern-daemo"
+name = "kern-daemon"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
-[[bin]]
-name = "kernd"
-pathh = "src/main.rs"
 
 [dependencies]
 kern-engine = { path = "../engine" }
