@@ -1,40 +1,48 @@
+# >_ kern
 
-# Kern
+<p align="center">
+  <img src="assets/kernBanner.png" width="700">
+</p>
 
-Kern is a lightweight, offline-first technical overlay for developers who want to think better, not delegate more.
+<p align="center">
+  <strong>Technical knowledge. On demand. Offline. Silent.</strong>
+</p>
 
-It lives silently in the background. You summon it with a keystroke. You search, you learn, you close it. It never interrupts your flow.
+<p align="center">
+  A lightweight, offline-first technical overlay for developers who want to think better, not delegate more.
+</p>
 
-It is not an AI that writes code for you. It is a tool that sharpens the engineer behind the keyboard.
+## What is Kern?
 
----
+Kern is a resident overlay for Linux developers.
 
-## What it does
+You press `Super + K`. A panel appears. You search. You find what you need. You press `ESC`. It disappears. You keep working.
 
-- Instant search across technical documentation, commands, and troubleshooting guides
-- Offline-first: everything that matters lives locally
-- Keyboard-driven: no mouse, no clutter, no distraction
-- Learn Mode: hints and architecture guidance instead of generated answers
-- Stays resident, stays silent, costs almost nothing
+That is the entire interaction model.
 
-## What it is not
+Kern does not write code for you. It does not autocomplete your thoughts. It does not replace understanding with convenience. It gives you fast access to technical knowledge, documentation, commands, troubleshooting, and gets out of your way.
 
-Kern is not a code generator. It will not complete your functions, scaffold your projects, or think for you. That is the point.
+## Why Kern exists
 
-The goal is to reduce dependency on generative AI for the wrong reasons, and rebuild the habit of understanding what you are building and why.
+Most developer tools optimise for output. They generate, suggest, complete, and decide.
 
----
+Kern optimises for understanding.
 
-## Architecture
+Kern was built where offline-first is not a design choice, it is a daily reality. That constraint shaped every decision: a lightweight daemon, local indexing, zero network dependency.
 
-```
-kern/
-├── daemon/     # Resident background process: hotkeys, indexing, cache, IPC
-├── overlay/    # Minimal UI layer: keyboard-first, instant open/close
-├── engine/     # Knowledge core: fuzzy search, parsing, content ranking
-├── docs/       # Local documentation sources (Markdown)
-└── config/     # User configuration
-```
+The habit of reaching for an AI to answer every technical question is slowly eroding something important: the ability to reason through a problem independently. To read documentation. To trace an error. To understand what you are building and why.
+
+Kern was built as a counter to that habit. Not as a rejection of technology, but as a deliberate choice to keep the programmer in control of their own thinking.
+
+## Features
+
+- **Instant search**, full-text search across local documentation, commands, and guides
+- **Offline-first**, everything lives locally, no internet required
+- **Keyboard-driven**, `Super + K` to open, `ESC` to close, arrows to navigate
+- **Silent by design**, resident in the background, invisible until needed
+- **Minimal footprint**, near-zero CPU and RAM usage at idle
+- **Learn Mode** *(planned)*, hints and architecture guidance instead of generated answers
+- **Workspace detection** *(planned)*, adapts to your current project's stack
 
 ## Stack
 
@@ -45,26 +53,92 @@ kern/
 | Search | Tantivy | Local full-text and fuzzy search in Rust |
 | Docs | Markdown | Portable, fast to index, easy to render |
 
-## Activation
+## Architecture
 
-```
-Super + K
-```
+Kern is divided into three components:
 
-The overlay appears. You search. You close with `ESC`. That is the entire interaction model.
+**Daemon**, resident background process. Handles hotkeys, indexing, caching, and IPC. Starts at boot and stays invisible.
 
----
+**Engine**, the knowledge core. Responsible for parsing Markdown documents, building the Tantivy index, and serving search results.
+
+**Overlay**, the visual layer. Built with Tauri and Svelte. Appears on `Super + K`, disappears on `ESC`. Keyboard-first, minimal, fast.
+
+<p align="center">
+  <img src="assets/kernConcept.png" width="700">
+</p>
 
 ## Status
 
-Early architecture phase. Not yet functional.
+Kern is in active early development. The core search pipeline is functional, the daemon indexes local Markdown documents and serves results to the overlay via HTTP. The overlay renders results in real time.
 
----
+What works today:
+- Daemon starts and indexes docs automatically
+- Full-text search via Tantivy
+- Overlay connected to daemon via HTTP
+- Results rendered in real time
+- `ESC` clears the search
+
+What is being built:
+- Native `Super + K` global hotkey
+- Tauri native window replacing browser preview
+- Richer result cards with excerpts and source paths
+- Package distribution for major Linux distros
+
+## Roadmap
+
+| Phase | Description | Status |
+|---|---|---|
+| 1 — Foundation | Daemon, engine, overlay connected end-to-end | ✅ Done |
+| 2 — Native | Global hotkey, Tauri window, result navigation | 🔧 In progress |
+| 3 — Content | Documentation library, command reference, troubleshooting guides | ⏳ Planned |
+| 4 — Learn Mode | Hint mode, architect mode, workspace detection | ⏳ Planned |
+| 5 — Distribution | AUR, Debian package, Flatpak, AppImage | ⏳ Planned |
+
+## Getting started
+
+### Requirements
+
+- Linux (X11 or Wayland)
+- Rust 1.77+
+- Node.js 20+
+- WebKit2GTK 4.1
+
+### Build from source
+
+```bash
+git clone https://github.com/ylite4taty/Kern.git
+cd kern
+cargo build --release
+```
+
+### Run the daemon
+
+```bash
+RUST_LOG=info cargo run -p kern-daemon
+```
+
+### Run the overlay (development)
+
+```bash
+cd overlay
+npm install
+npm run dev
+```
 
 ## Philosophy
 
-Most tools optimise for output. Kern optimises for understanding.
+Kern is not another AI tool.
 
-A developer who reads documentation, traces errors, and reasons through architecture does not need an AI to finish their sentences. They need fast access to the right knowledge at the right moment.
+It is a tool for developers who have noticed what happens when you stop thinking for yourself. Who have felt the difference between understanding a solution and copying one. Who want to rebuild the habit of reading, reasoning, and learning.
+
+The firefly does not illuminate everything. It shows you just enough to take the next step.
 
 That is what Kern is for.
+
+## Contributing
+
+Kern is open source and welcomes contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+MIT
