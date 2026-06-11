@@ -1,9 +1,9 @@
 <script>
   import { onMount } from 'svelte';
+  import { getCurrentWindow } from '@tauri-apps/api/window';
 
   let query = '';
   let results = [];
-  let visible = true;
 
   async function search(q) {
     if (!q.trim()) {
@@ -28,39 +28,48 @@
     if (e.key === 'Escape') {
       query = '';
       results = [];
+      getCurrentWindow().hide();
     }
   }
 
   $: search(query);
 
-  onMount(() => {
+  onMount(async () => {
     document.getElementById('search-input')?.focus();
+
+    const win = getCurrentWindow();
+
+    const unlisten = await win.listen('tauri://blur', () => {
+      query = '';
+      results = [];
+      win.hide();
+    });
+
+    return () => unlisten();
   });
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
 
-{#if visible}
-  <div class="overlay">
-    <div class="panel">
-      <input
-        id="search-input"
-        type="text"
-        bind:value={query}
-        placeholder="search documentation..."
-        autocomplete="off"
-        spellcheck="false"
-      />
-      {#if results.length > 0}
-        <ul class="results">
-          {#each results as result}
-            <li>{result}</li>
-          {/each}
-        </ul>
-      {/if}
-    </div>
+<div class="overlay">
+  <div class="panel">
+    <input
+      id="search-input"
+      type="text"
+      bind:value={query}
+      placeholder="search documentation..."
+      autocomplete="off"
+      spellcheck="false"
+    />
+    {#if results.length > 0}
+      <ul class="results">
+        {#each results as result}
+          <li>{result}</li>
+        {/each}
+      </ul>
+    {/if}
   </div>
-{/if}
+</div>
 
 <style>
   :global(*, *::before, *::after) {
